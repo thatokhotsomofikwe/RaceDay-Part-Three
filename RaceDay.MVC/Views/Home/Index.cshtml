@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-3 fw-bold">RaceDay</h1>
+        <p class="lead">Your race. Your pace. Your achievement.</p>
+        <p>Discover events, manage your entries, and track your results.</p>
+
+        @if (Context.Session.GetString("Role") == "Participant")
+        {
+            <a asp-controller="Events" asp-action="Index" class="btn btn-primary btn-lg m-2">
+                Browse Events
+            </a>
+
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-primary btn-lg m-2">
+                My Profile
+            </a>
+        }
+        else if (Context.Session.GetString("Role") == "Organiser")
+        {
+            <a asp-controller="Organiser" asp-action="Dashboard" class="btn btn-primary btn-lg m-2">
+                Organiser Dashboard
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-primary btn-lg m-2">
+                Log In
+            </a>
+
+            <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-primary btn-lg m-2">
+                Register
+            </a>
+        }
+    </div>
+
+    <div class="row g-4 mt-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3>Discover Events</h3>
+                    <p>Find running, walking and cycling events to suit your goals.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3>Manage Entries</h3>
+                    <p>Keep track of your event registrations and participation status.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3>Track Results</h3>
+                    <p>View race results and celebrate your progress.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

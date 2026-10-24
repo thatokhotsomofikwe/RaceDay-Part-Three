@@ -1,0 +1,76 @@
+﻿@model RaceDay.MVC.Models.EnrolmentCreateViewModel
+
+@{
+    ViewData["Title"] = "Enrol in Event";
+}
+
+<div class="container py-5">
+    <div class="mb-4">
+        <h1 class="display-5 fw-bold">Enrol in Event</h1>
+        <p class="lead">
+            Choose the category that suits you.
+        </p>
+        <h4>@Model.EventName</h4>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-warning">
+            @ViewBag.Error
+        </div>
+    }
+
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+    @if (Model.Categories != null && Model.Categories.Any())
+    {
+        <form asp-controller="Enrolments"
+              asp-action="Create"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="EventID" />
+
+            <div class="mb-3">
+                <label asp-for="CategoryID" class="form-label">
+                    Event category
+                </label>
+
+                <select asp-for="CategoryID" class="form-select" required>
+                    <option value="">-- Select a category --</option>
+
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.CategoryID">
+                            @category.CategoryName —
+                            @category.DistanceKm km —
+                            R @category.EntryFee
+                        </option>
+                    }
+                </select>
+
+                <span asp-validation-for="CategoryID"
+                      class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Confirm Enrolment
+            </button>
+
+            <a asp-controller="Events"
+               asp-action="Index"
+               class="btn btn-outline-secondary ms-2">
+                Back to Events
+            </a>
+        </form>
+    }
+    else
+    {
+        <a asp-controller="Events"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Events
+        </a>
+    }
+</div>

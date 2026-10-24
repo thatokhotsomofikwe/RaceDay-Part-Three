@@ -124,5 +124,24 @@ namespace RaceDay.API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("mine")]
+        [RoleAuthorize("Organiser")]
+        public async Task<IActionResult> GetMyEvents()
+        {
+            var userId = HttpContext.Session.GetInt32("UserID");
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var events = await _context.Events
+                .Include(e => e.Categories)
+                .Where(e => e.OrganiserID == userId.Value)
+                .ToListAsync();
+
+            return Ok(events);
+        }
     }
 }

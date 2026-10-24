@@ -1,0 +1,232 @@
+﻿@model List<RaceDay.MVC.Controllers.EventViewModel>
+
+@{
+    ViewData["Title"] = "Browse Events";
+}
+
+<div class="container py-5">
+    <div class="mb-4">
+        <h1 class="display-5 fw-bold">Browse Events</h1>
+        <p class="lead">
+            Find your next running, walking or cycling challenge.
+        </p>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-warning">@ViewBag.Error</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            No events are available right now. Please check again later.
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-3">Find an Event</h4>
+
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="eventSearch" class="form-label">
+                            Search by event or location
+                        </label>
+                        <input type="text" id="eventSearch"
+                               class="form-control"
+                               placeholder="e.g. Marathon or Pretoria" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="eventTypeFilter" class="form-label">
+                            Event type
+                        </label>
+                        <select id="eventTypeFilter" class="form-select">
+                            <option value="">All event types</option>
+                            @foreach (var type in Model
+                                .Where(e => !string.IsNullOrWhiteSpace(e.EventType))
+                                .Select(e => e.EventType)
+                                .Distinct()
+                                .OrderBy(t => t))
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="dateFilter" class="form-label">
+                            Event date
+                        </label>
+                        <select id="dateFilter" class="form-select">
+                            <option value="all">All events</option>
+                            <option value="upcoming">Upcoming events</option>
+                            <option value="past">Past events</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p id="eventCount" class="text-muted mb-3"></p>
+
+        <div class="row g-4" id="eventList">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4 event-card"
+                     data-name="@item.Name"
+                     data-location="@item.Location"
+                     data-type="@item.EventType"
+                     data-date="@item.EventDate.ToString("yyyy-MM-dd")">
+
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl"
+                                 class="card-img-top"
+                                 alt="@item.Name event image"
+                                 style="height: 220px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center text-muted"
+                                 style="height: 150px;">
+                                <span>No event image available</span>
+                            </div>
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <span class="badge bg-primary align-self-start mb-2">
+                                @item.EventType
+                            </span>
+
+                            <h3 class="card-title">@item.Name</h3>
+
+                            <p class="card-text">@item.Description</p>
+
+                            <p>
+                                <strong>Date:</strong>
+                                @item.EventDate.ToString("dd MMM yyyy")
+                            </p>
+
+                            <p><strong>Location:</strong> @item.Location</p>
+
+                            <p><strong>Distance:</strong> @item.Distance km</p>
+
+                            <div class="mt-auto pt-3">
+                                <a asp-controller="Events"
+                                   asp-action="Details"
+                                   asp-route-id="@item.EventID"
+                                   class="btn btn-outline-primary w-100 mb-2">
+                                    View Details
+                                </a>
+
+                                @if (Context.Session.GetString("Role") == "Participant")
+                                {
+                                    <a asp-controller="Enrolments"
+                                       asp-action="Create"
+                                       asp-route-eventId="@item.EventID"
+                                       class="btn btn-primary w-100">
+                                        View Categories & Enrol
+                                    </a>
+                                }
+                                else if (string.IsNullOrEmpty(
+                                    Context.Session.GetString("Role")))
+                                {
+                                    <a asp-controller="Auth"
+                                       asp-action="Login"
+                                       class="btn btn-outline-primary w-100">
+                                        Log in to Enrol
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div id="noMatchingEvents"
+             class="alert alert-info mt-4"
+             style="display: none;">
+            No events match your search. Try changing your filters.
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-controller="Home" asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Home
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const search = document.getElementById("eventSearch");
+            const typeFilter = document.getElementById("eventTypeFilter");
+            const dateFilter = document.getElementById("dateFilter");
+            const cards = Array.from(document.querySelectorAll(".event-card"));
+            const count = document.getElementById("eventCount");
+            const noMatches = document.getElementById("noMatchingEvents");
+
+            if (!search || !typeFilter || !dateFilter) return;
+
+            function filterEvents() {
+                const query = search.value.trim().toLowerCase();
+                const selectedType = typeFilter.value.toLowerCase();
+                const selectedDate = dateFilter.value;
+
+                let visible = 0;
+
+                const today = new Date();
+                const todayString =
+                    today.getFullYear() + "-" +
+                    String(today.getMonth() + 1).padStart(2, "0") + "-" +
+                    String(today.getDate()).padStart(2, "0");
+
+                cards.forEach(function (card) {
+                    const name = (card.dataset.name || "").toLowerCase();
+                    const location = (card.dataset.location || "").toLowerCase();
+                    const type = (card.dataset.type || "").toLowerCase();
+                    const eventDate = card.dataset.date || "";
+
+                    const matchesSearch =
+                        name.includes(query) || location.includes(query);
+
+                    const matchesType =
+                        selectedType === "" || type === selectedType;
+
+                    const matchesDate =
+                        selectedDate === "all" ||
+                        (selectedDate === "upcoming" && eventDate >= todayString) ||
+                        (selectedDate === "past" && eventDate < todayString);
+
+                    const show = matchesSearch && matchesType && matchesDate;
+                    card.style.display = show ? "" : "none";
+
+                    if (show) visible++;
+                });
+
+                count.textContent = visible +
+                    (visible === 1 ? " event found" : " events found");
+
+                noMatches.style.display = visible === 0 ? "block" : "none";
+            }
+
+            search.addEventListener("input", filterEvents);
+            typeFilter.addEventListener("change", filterEvents);
+            dateFilter.addEventListener("change", filterEvents);
+
+            filterEvents();
+        });
+    </script>
+}
