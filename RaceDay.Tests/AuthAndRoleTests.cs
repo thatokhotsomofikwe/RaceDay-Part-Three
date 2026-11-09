@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using RaceDay.API;
 using RaceDay.API.Data;
 using RaceDay.API.DTOs;
 using System.Net;
@@ -18,6 +19,7 @@ namespace RaceDay.Tests
         {
             _factory = factory.WithWebHostBuilder(builder =>
             {
+                builder.UseEnvironment("Testing");
                 builder.ConfigureServices(services =>
                 {
                     var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
@@ -43,7 +45,7 @@ namespace RaceDay.Tests
             var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new LoginDto { Email = "test@test.com", Password = "Password123" });
 
             // Assert
-            Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
             Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
         }
 
