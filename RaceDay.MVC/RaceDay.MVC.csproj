@@ -1,9 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="AppDbContext.cs" />
+		<Compile Remove="BlobStorageService.cs" />
+		<Compile Remove="EventImagesController.cs" />
+		<Compile Remove="RoutesController.cs" />
+		<Compile Remove="UserController.cs" />
+		<Compile Remove="WeatherController.cs" />
+		<Compile Remove="20261024230905_InitialCreate.cs" />
+		<Compile Remove="20261024230905_InitialCreate.Designer.cs" />
+		<Compile Remove="AppDbContextModelSnapshot.cs" />
+	</ItemGroup>
 
 </Project>
