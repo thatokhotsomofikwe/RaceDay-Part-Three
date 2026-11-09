@@ -59,8 +59,9 @@ The latest successful CI run confirms:
 * MVC build: Passed.
 * Automated tests: 3 passed, 0 failed.
 
-GitHub Repository
-
-https://github.com/thatokhotsomofikwe/RaceDay-Part-Three
+YouTube Link:
 
 Framework: .NET 8
+Workflow:
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/20dac3d2-19bf-4dbc-8592-8fe0ca7be176" />
+
