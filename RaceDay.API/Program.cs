@@ -2,58 +2,59 @@ using Microsoft.EntityFrameworkCore;
 using RaceDay.API.Data;
 using RaceDay.API.Services;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Database connection
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Azure Blob Storage service
-builder.Services.AddSingleton<BlobStorageService>();
-
-// Session management
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+public partial class Program {
+    private static async Task Main(string[] args)
     {
-        options.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    });
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+        // Database connection
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(
+                builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddHttpClient();
+        // Azure Blob Storage service
+        builder.Services.AddSingleton<BlobStorageService>();
 
-var app = builder.Build();
+        // Session management
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler =
+                    System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+            });
 
-app.UseHttpsRedirection();
-app.UseSession();
-app.UseAuthorization();
-app.MapControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
-if (!app.Environment.IsEnvironment("Testing"))
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
+        builder.Services.AddHttpClient();
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseSession();
+        app.UseAuthorization();
+        app.MapControllers();
+
+        // Existing RaceDayDB database is being used.
+        // Migrations are temporarily disabled to prevent
+        // EF Core from recreating existing tables.
+
+        app.Run();
     }
-}
+} // For integration testing
 
-app.Run();
 public partial class Program { } // For integration testing
