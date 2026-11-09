@@ -60,6 +60,7 @@ The latest successful CI run confirms:
 * Automated tests: 3 passed, 0 failed.
 
 YouTube Link:
+https://www.youtube.com/watch?v=TLMwAY2rvtk
 
 Framework: .NET 8
 Workflow:
